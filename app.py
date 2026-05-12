@@ -128,6 +128,77 @@ def image_to_video(img, output_path, duration=VIDEO_DURATION):
 def health():
     return jsonify({"status": "ok", "service": "menteviva-video-generator"})
 
+@app.route('/generate-image', methods=['POST'])
+def generate_image():
+    """
+    POST /generate-image
+    Body: { "phrase": "Sua frase aqui" }
+    Returns: PNG image file
+    """
+    data = request.get_json()
+    if not data or 'phrase' not in data:
+        return jsonify({"error": "Campo 'phrase' obrigatório"}), 400
+
+    phrase = data.get('phrase', '').strip()
+    if not phrase:
+        return jsonify({"error": "Frase não pode ser vazia"}), 400
+
+    try:
+        frame = create_frame(phrase)
+        img_id = str(uuid.uuid4())
+        output_path = os.path.join(OUTPUT_DIR, f"{img_id}.png")
+        frame.save(output_path, 'PNG')
+
+        return send_file(
+            output_path,
+            mimetype='image/png',
+            as_attachment=True,
+            download_name=f"menteviva_{img_id}.png"
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/generate-image-url', methods=['POST'])
+def generate_image_url():
+    """
+    Returns URL to the generated image — useful for Buffer
+    """
+    data = request.get_json()
+    if not data or 'phrase' not in data:
+        return jsonify({"error": "Campo 'phrase' obrigatório"}), 400
+
+    phrase = data.get('phrase', '').strip()
+
+    try:
+        frame = create_frame(phrase)
+        img_id = str(uuid.uuid4())
+        output_path = os.path.join(OUTPUT_DIR, f"{img_id}.png")
+        frame.save(output_path, 'PNG')
+
+        base_url = request.host_url.rstrip('/')
+        return jsonify({
+            "success": True,
+            "image_url": f"{base_url}/image/{img_id}",
+            "image_id": img_id,
+            "phrase": phrase
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/image/<image_id>', methods=['GET'])
+def get_image(image_id):
+    """Serve generated image by ID"""
+    try:
+        uuid.UUID(image_id)
+    except ValueError:
+        return jsonify({"error": "Invalid image ID"}), 400
+
+    path = os.path.join(OUTPUT_DIR, f"{image_id}.png")
+    if not os.path.exists(path):
+        return jsonify({"error": "Image not found"}), 404
+
+    return send_file(path, mimetype='image/png')
+
 @app.route('/generate', methods=['POST'])
 def generate():
     """
