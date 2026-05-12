@@ -42,12 +42,20 @@ def create_frame(phrase):
     draw = ImageDraw.Draw(img)
     W, H = img.size
 
+    JB_MONO = "/usr/share/fonts/truetype/jetbrains/JetBrainsMono-Bold.ttf"
+    JB_MONO_REG = "/usr/share/fonts/truetype/jetbrains/JetBrainsMono-Regular.ttf"
+    FALLBACK = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+    FALLBACK_REG = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
     try:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", FONT_SIZE)
-        font_handle = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 28)
+        font = ImageFont.truetype(JB_MONO, FONT_SIZE)
+        font_handle = ImageFont.truetype(JB_MONO_REG, 28)
     except:
-        font = ImageFont.load_default()
-        font_handle = font
+        try:
+            font = ImageFont.truetype(FALLBACK, FONT_SIZE)
+            font_handle = ImageFont.truetype(FALLBACK_REG, 28)
+        except:
+            font = ImageFont.load_default()
+            font_handle = font
 
     # Wrap text — keep original case, no uppercase
     lines = wrap_text(phrase, max_chars=26)
@@ -59,15 +67,8 @@ def create_frame(phrase):
     pad_h = 70
     y_start = (H - total_height) // 2 - pad_v
 
-    # Dark overlay behind text only
-    overlay = Image.new('RGBA', img.size, (0, 0, 0, 0))
-    overlay_draw = ImageDraw.Draw(overlay)
-    overlay_draw.rectangle(
-        [pad_h - 20, y_start,
-         W - pad_h + 20, y_start + total_height + pad_v * 2],
-        fill=(0, 0, 0, 200)
-    )
-    img = Image.alpha_composite(img.convert('RGBA'), overlay).convert('RGB')
+    # No box — just draw directly on background
+    img = img.convert('RGB')
     draw = ImageDraw.Draw(img)
 
     # Draw text lines centered
