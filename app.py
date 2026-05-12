@@ -175,7 +175,7 @@ def generate_image_url():
         output_path = os.path.join(OUTPUT_DIR, f"{img_id}.png")
         frame.save(output_path, 'PNG')
 
-        base_url = request.host_url.rstrip('/')
+        base_url = request.host_url.rstrip('/').replace('http://', 'https://')
         return jsonify({
             "success": True,
             "image_url": f"{base_url}/image/{img_id}",
@@ -260,8 +260,7 @@ def generate_url():
         output_path = os.path.join(OUTPUT_DIR, f"{video_id}.mp4")
         image_to_video(frame, output_path, duration)
 
-        # Return the video ID so it can be fetched
-        base_url = request.host_url.rstrip('/')
+        base_url = request.host_url.rstrip('/').replace('http://', 'https://')
         return jsonify({
             "success": True,
             "video_url": f"{base_url}/video/{video_id}",
