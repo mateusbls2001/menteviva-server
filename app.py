@@ -12,7 +12,7 @@ app = Flask(__name__)
 TEMPLATE_PATH = "template.png"
 OUTPUT_DIR = "/tmp/menteviva_videos"
 VIDEO_DURATION = 8  # seconds
-FONT_SIZE = 72
+FONT_SIZE = 58
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Colors
@@ -20,7 +20,7 @@ WHITE = (245, 245, 243)
 BLACK = (10, 10, 11)
 ACCENT = (160, 160, 155)
 
-def wrap_text(text, max_chars=22):
+def wrap_text(text, max_chars=28):
     """Wrap text into lines"""
     words = text.split()
     lines = []
@@ -42,46 +42,55 @@ def create_frame(phrase):
     draw = ImageDraw.Draw(img)
     W, H = img.size
 
-    # Try to load font, fallback to default
     try:
         font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", FONT_SIZE)
-        font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 32)
+        font_handle = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 28)
     except:
         font = ImageFont.load_default()
-        font_small = font
+        font_handle = font
 
-    # Wrap and center text
-    lines = wrap_text(phrase.upper(), max_chars=18)
-    line_height = FONT_SIZE + 20
+    # Wrap text — keep original case, no uppercase
+    lines = wrap_text(phrase, max_chars=26)
+    line_height = FONT_SIZE + 16
     total_height = len(lines) * line_height
 
-    # Draw semi-transparent overlay in center for text
+    # Center vertically with padding
+    pad_v = 50
+    pad_h = 70
+    y_start = (H - total_height) // 2 - pad_v
+
+    # Dark overlay behind text only
     overlay = Image.new('RGBA', img.size, (0, 0, 0, 0))
     overlay_draw = ImageDraw.Draw(overlay)
-    pad = 60
-    y_start = (H - total_height) // 2 - pad
     overlay_draw.rectangle(
-        [80, y_start, W - 80, y_start + total_height + pad * 2],
-        fill=(0, 0, 0, 160)
+        [pad_h - 20, y_start,
+         W - pad_h + 20, y_start + total_height + pad_v * 2],
+        fill=(0, 0, 0, 200)
     )
     img = Image.alpha_composite(img.convert('RGBA'), overlay).convert('RGB')
     draw = ImageDraw.Draw(img)
 
-    # Draw each line centered
-    y = (H - total_height) // 2
+    # Draw text lines centered
+    y = y_start + pad_v
     for line in lines:
         bb = draw.textbbox((0, 0), line, font=font)
         tw = bb[2] - bb[0]
         x = (W - tw) // 2
-        # Shadow
-        draw.text((x + 2, y + 2), line, font=font, fill=(0, 0, 0, 180))
-        # Main text
+        # Subtle shadow
+        draw.text((x + 2, y + 2), line, font=font, fill=(0, 0, 0))
+        # Main white text
         draw.text((x, y), line, font=font, fill=WHITE)
         y += line_height
 
-    # Accent line below text
-    line_y = (H - total_height) // 2 + total_height + 30
-    draw.rectangle([160, line_y, W - 160, line_y + 1], fill=ACCENT)
+    # Thin accent line below text block
+    line_y = y_start + total_height + pad_v * 2 + 10
+    draw.rectangle([pad_h + 40, line_y, W - pad_h - 40, line_y + 1], fill=ACCENT)
+
+    # @menteviva handle centered at bottom
+    handle = "@menteviva"
+    bb_h = draw.textbbox((0, 0), handle, font=font_handle)
+    tw_h = bb_h[2] - bb_h[0]
+    draw.text(((W - tw_h) // 2, H - 80), handle, font=font_handle, fill=ACCENT)
 
     return img
 
