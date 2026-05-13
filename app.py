@@ -38,7 +38,7 @@ def wrap_text(text, max_chars=28):
 
 def create_frame(phrase):
     """Create image frame with phrase text"""
-    img = Image.open(TEMPLATE_PATH).copy()
+    img = Image.new('RGB', (1080, 1080), (0, 0, 0))
     draw = ImageDraw.Draw(img)
     W, H = img.size
 
