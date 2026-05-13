@@ -12,7 +12,7 @@ app = Flask(__name__)
 TEMPLATE_PATH = "template.png"
 OUTPUT_DIR = "/tmp/menteviva_videos"
 VIDEO_DURATION = 8  # seconds
-FONT_SIZE = 58
+FONT_SIZE = 40
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Colors
