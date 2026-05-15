@@ -88,7 +88,7 @@ def create_frame(phrase):
     draw.rectangle([pad_h + 40, line_y, W - pad_h - 40, line_y + 1], fill=ACCENT)
 
     # @menteviva handle centered at bottom
-    handle = "@menteviva"
+    handle = "@menteviva_01"
     bb_h = draw.textbbox((0, 0), handle, font=font_handle)
     tw_h = bb_h[2] - bb_h[0]
     draw.text(((W - tw_h) // 2, H - 80), handle, font=font_handle, fill=ACCENT)
