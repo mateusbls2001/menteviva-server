@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 # Configs
 OUTPUT_DIR = "/tmp/menteviva_videos"
-MUSIC_DIR = "/app/music"
+MUSIC_DIR = "/app/music"  # repo root /music → /app/music in container
 VIDEO_DURATION = 10  # seconds
 FONT_SIZE = 32
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -22,7 +22,7 @@ ACCENT = (160, 160, 155)
 def get_random_music():
     """Pick a random .mp3 from /app/music/"""
     try:
-        files = [f for f in os.listdir(MUSIC_DIR) if f.endswith('.mp3')]
+        files = [f for f in os.listdir(MUSIC_DIR) if f.endswith('.mp3') or f.endswith('.wav')]
         if files:
             return os.path.join(MUSIC_DIR, random.choice(files))
     except:
@@ -240,3 +240,11 @@ def get_video(video_id):
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
+@app.route('/debug-music', methods=['GET'])
+def debug_music():
+    try:
+        files = os.listdir(MUSIC_DIR)
+        return jsonify({"path": MUSIC_DIR, "files": files})
+    except Exception as e:
+        return jsonify({"error": str(e)})
